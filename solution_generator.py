@@ -3,27 +3,6 @@ import random
 import numpy as np
 import example
 
-
-# def squared_sum(arr):
-#     return np.array([x ** 2 for x in arr]).sum()
-#
-#
-# def calculate_cost(grid):
-#     return 285 - squared_sum(grid[0:1])
-#
-#
-# def initialize_grid(grid):
-#     return True
-#
-#
-# max_cost = squared_sum(np.arange(1, 10))
-# example_grid = example.get_grid()
-#
-# initialize_grid(example_grid)
-# cost = calculate_cost(example_grid)
-# print(cost)
-
-
 def cost_cells(grid):
     cost = 0
     for i in range(1, 4):
@@ -47,7 +26,7 @@ def cost_horizontal(grid):
 
 def cost_vertical(grid):
     cost = 0
-    grid.transpose()
+    grid = grid.copy().transpose()
     for i in range(0, 9):
         partial = 9 - len(np.unique(grid[i]))
         # print('Column ', i, ' cost: ', partial)
@@ -66,14 +45,14 @@ def calculate_cost(grid):
     for i in range(0, 9):
         partial = 9 - len(np.unique(grid[i]))
         cost += partial
-    grid.transpose()
+    grid = grid.copy().transpose()
     for i in range(0, 9):
         partial = 9 - len(np.unique(grid[i]))
         cost += partial
     return cost
 
 
-def random_change(grid, changes=1):
+def random_change(grid):
     blocking_grid = example.get_blocking_grid()
     x = random.randint(0, 8)
 
@@ -97,4 +76,86 @@ def random_change(grid, changes=1):
 
     # print('Point:', x, y)
     grid[x][y] = random.randint(1, 9)
+    return grid
+
+
+def initialize():
+    # random.seed(1)
+    blocking_grid = example.get_blocking_grid()
+    print('Grid:\n', blocking_grid)
+
+    for i, v in enumerate(blocking_grid):
+        first_row = blocking_grid[i]
+        unique = np.unique(first_row)
+        print('Unique elements:', unique)
+        all_characters = np.array([x for x in range(1, 10)])
+        print('All possible characters:', all_characters)
+        diff = np.setdiff1d(all_characters, unique)
+        print('All characters absent in first row of grid:', diff)
+
+        for i in diff:
+            zero_index = np.array(np.where(first_row == 0))[0]
+            print('Indices of empty spaces in first row of grid:', zero_index)
+
+            index_to_remove = random.randint(0, len(diff) - 1)
+            print('Index to remove:', index_to_remove)
+            element = diff[index_to_remove]
+            print('Element:', element)
+            diff = np.setdiff1d(diff, element)
+            print('After removed:', diff)
+            print('Row before:', first_row)
+
+            first_row[zero_index[0]] = element
+            print('Row after:', first_row)
+
+    print('Grid:\n', blocking_grid)
+
+    print('Cost horizontal:', cost_horizontal(blocking_grid))
+    print('Cost vertical:  ', cost_vertical(blocking_grid))
+    print('Cost cell:      ', cost_cells(blocking_grid))
+    print('Cost:           ', calculate_cost(blocking_grid))
+    return blocking_grid
+
+
+def mutate(grid, axis=0):
+
+    if axis == 1:
+        blocking_grid = example.get_blocking_grid().transpose()
+        grid = grid.transpose()
+    else:
+        blocking_grid = example.get_blocking_grid()
+
+    # print('Grid:\n', blocking_grid)
+
+    random_index = random.randint(1, 8)
+    first_row = blocking_grid[random_index]
+    unique = np.unique(first_row)
+    # print('Unique elements:', unique)
+    all_characters = np.array([x for x in range(1, 10)])
+    # print('All possible characters:', all_characters)
+    diff = np.setdiff1d(all_characters, unique)
+    # print('All characters absent in first row of grid:', diff)
+
+    for i in diff:
+        zero_index = np.array(np.where(first_row == 0))[0]
+        # print('Indices of empty spaces in first row of grid:', zero_index)
+
+        index_to_remove = random.randint(0, len(diff) - 1)
+        # print('Index to remove:', index_to_remove)
+        element = diff[index_to_remove]
+        # print('Element:', element)
+        diff = np.setdiff1d(diff, element)
+        # print('After removed:', diff)
+        # print('Row before:', first_row)
+
+        first_row[zero_index[0]] = element
+        # print('Row after:', first_row)
+
+    # print('Row:\n', first_row)
+
+    grid[random_index] = first_row
+    # print('Cost horizontal:', cost_horizontal(grid))
+    # print('Cost vertical:  ', cost_vertical(grid))
+    # print('Cost cell:      ', cost_cells(grid))
+    # print('Cost:           ', calculate_cost(grid))
     return grid
